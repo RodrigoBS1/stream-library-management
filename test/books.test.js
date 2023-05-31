@@ -3,7 +3,10 @@ const app = require("../app");
 const db = require('../db')
 
 describe("The /books endpoint", () => {
-    describe(" for GET requests", () => {
+    afterAll(async () => {
+        await db.destroy();
+    })
+    describe("for GET requests", () => {
 
         beforeEach(async () => {
             await db('books').insert([
@@ -15,8 +18,7 @@ describe("The /books endpoint", () => {
         afterEach(async () => {
             await db('books').del()
         })
-        test("responds with a list of books", async () =>{
-            // unfulfilled
+        test("responds with a list of books", async () => {
             // SEAT
             // SETUP & EXECUTE
             const response = await request(app).get('/books');
@@ -28,4 +30,22 @@ describe("The /books endpoint", () => {
             expect(response.body[0]).toHaveProperty('author')
         })
     });
+
+    describe("for POST requests", () => {
+        afterEach(async () => {
+            await db('books').del()
+        })
+        test("creates and new book and responds with the new book", async () => {
+            // SEAT
+            const newBook = { title: "The Scone Mindset", author: "Unknown ATM" }
+
+            const response = await request(app).post('/books').send(newBook)
+
+            expect(response.statusCode).toBe(201)
+            expect(response.body[0]).toHaveProperty("id")
+            expect(response.body[0].title).toBe(newBook.title)
+            expect(response.body[0].author).toBe(newBook.author)
+
+        })
+    })
 });
